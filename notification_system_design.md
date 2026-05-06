@@ -233,3 +233,9 @@ SELECT * FROM notifications
 WHERE notificationType = 'Placement' AND createdAt >= DATE_SUB(NOW(), INTERVAL 7 DAY);
 ``` 
 # Stage 4
+1. **Pagination**: -Instead of loading all notifications at once load a limited number of notifications per page.
+2. **Lazy Loading**: Load notifications as the user scrolls down the page so only a subset of notifications is loaded initially and more are loaded as needed
+3. **Caching**: Implement caching mechanisms to store frequently accessed notifications in memory to reduce the number of database queries and improve response times.
+
+tradeoffs:
+- Pagination and lazy loading can improve performance but may require additional implementation effort and can lead to a less seamless user experience if not implemented properly.

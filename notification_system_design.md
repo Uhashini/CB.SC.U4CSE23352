@@ -1,10 +1,6 @@
-//backend developer -campus notification platform
-//stage 1 :
-//fe dev asked rest api design with json request,response and header structures 
-//generate rest api design for notification system with json request,response and header structures with md formatting
 # Notification System API Design
 ## Base URL
-```https://api.campusnotifications.com/```
+```https://campusnotifications.com/```
 ## Endpoints
 ### 1. Create Notification
 - **URL**: `/notifications`
@@ -17,8 +13,210 @@
 {
     "title": "New event title",
     "message":"Descriptions about the event", 
+    "targetAudience": "students/faculty/all",
+    "scheduledTime": "2024-07-01T10:00:00Z",
+    "priority": "high/medium/low",
+    "attachments": [
+        {
+            "type": "image/pdf",
+            "url": "https://notification.com/attachment.pdf"
+        }
+    ]
+}
+
+```
+- **Response**:         
+```json
+{
+    "success": true,
+    "notificationId": "12345",
+    "message": "Notification created successfully"
+}
+``` 
+### 2. Get Notifications
+- **URL**: `/notifications` 
+- **Method**: `GET`
+- **Headers**:
+  -`Authorization:Bearer <token>`
+- **Query Parameters**:
+  - `targetAudience`: students/faculty/all
+    - `priority`: high/medium/low
+    - `scheduledTime`: before/after a specific time
+- **Response**:
+```json
+{
+    "success": true,
+    "notifications": [
+        {
+            "notificationId": "12345",
+            "title": "New event title",
+            "message":"Descriptions about the event", 
+            "targetAudience": "students/faculty/all",
+            "scheduledTime": "2024-07-01T10:00:00Z",
+            "priority": "high/medium/low",
+            "attachments": [
+                {
+                    "type": "image/pdf",
+                    "url": "https://notification.com/attachment.pdf"
+                }
+            ]
+        },
+        
+    ]
 }
 ```
+### 3. Update Notification
+- **URL**: `/notifications/{notificationId}`
+- **Method**: `PUT`
+- **Headers**:
+  - `Content-Type: application/json`
+  - `Authorization: Bearer <token>`
+- **Request Body**:
+```json
+{
+    "title": "Updated event title",
+    "message": "Updated description about the event",
+    "targetAudience": "students/faculty/all",
+    "scheduledTime": "2024-07-01T10:00:00Z",
+    "priority": "high/medium/low",
+    "attachments": [
+        {
+            "type": "image/pdf",
+            "url": "https://notification.com/updated_attachment.pdf"
+        }
+    ]
+}
+```
+- **Response**:
+```json
+{
+    "success": true,
+    "message": "Notification updated successfully"
+}
+```
+### 4. Delete Notification
+- **URL**: `/notifications/{Id}`
+- **Method**: `DELETE`
+- **Headers**:
+  - `Authorization: Bearer <token>`
+- **Response**:
+```json
+{
+    "success": true,
+    "message": "Notification deleted successfully"
+}
+``` 
+### 5. Get Notification Details
+- **URL**: `/notifications/{notificationId}`   
+- **Method**: `GET`
+- **Headers**:
+  - `Authorization: Bearer <token>`
+- **Response**:
+```json
+{
+    "success": true,
+    "notification": {
+        "notificationId": "12345",
+        "title": "New event title",
+        "message":"Descriptions about the event", 
+        "targetAudience": "students/faculty/all",
+        "scheduledTime": "2024-07-01T10:00:00Z",
+        "priority": "high/medium/low",
+        "attachments": [
+            {
+                "type": "image/pdf",
+                "url": "https://notification.com/attachment.pdf"
+            }
+        ]
+    }
+}
+```
+
+# Stage 2:
+## Database Choice
+For the notification system, I would suggest using a NoSQL database like MongoDB. Here are the reasons for this choice:
+1. **Flexibility**: NoSQL databases allow for a flexible schema which is good for a notification system where the structure of notifications can vary 
+ex: different types of attachments
+2. **Scalability**: NoSQL databases are designed to scale horizontally so it iseasier to handle increasing volumes of data as the number of notifications grows
+3. **Performance**: NoSQL databases can provide faster read and write operations for large volumes  
+## Database Schema 
+### Notifications Collection
+```json
+{
+    "_id": ObjectId,
+    "title": String,
+    "message": String,
+    "targetAudience": String,
+    "scheduledTime": Date,
+    "priority": String,
+    "attachments": [
+        {
+            "type": String,
+            "url": String
+        }
+    ],
+    "createdAt": Date,
+    "updatedAt": Date
+}
+``` 
+## Problems with Increasing Data Volume
+//very short no comma
+1. **Performance Degradation**: As volume of notifications increase query performance may degrade and leading to slow response time
+2. **Storage Issues**: Large volumes of data can lead to storage issues if attachments are stored in the database
+3. **Backup and Recovery**: Managing backups and recovery can become more complex
+## Solution
+1. **Indexing**: Create indexes on frequently queried fields to improve query performance
+2. **Archiving**: Move old notifications to a separate collection or storage
+3. **Cloud Storage**: Store attachments in cloud storage services like AWS S3 and save only the URLs in the database
+## Queries
+### MongoDB Queries
+1. **Create Notification**:
+```
+db.notifications.insertOne({
+    title: "New event title",
+    message: "Description about the event",
+    targetAudience: "students/faculty/all",
+    scheduledTime: new Date("2024-07-01T10:00:00Z"),
+    priority: "high/medium/low",
+    attachments: [
+        {
+            type: "image/pdf",
+            url: "https://notification.com/attachment.pdf"
+        }
+    ],
+    createdAt: new Date(),
+    updatedAt: new Date()
+})
+```
+2. **Get Notifications**:
+```db.notifications.find({targetAudience: "students"})
+```
+3. **Update Notification**:
+```db.notifications.updateOne(
+    {_id: ObjectId("12345")},
+    {
+        $set: {
+            title: "Updated event title",
+            message: "Updated description about the event",
+            targetAudience: "students/faculty/all",
+            scheduledTime: new Date("2024-07-01T10:00:00Z"),
+            priority: "high/medium/low",
+            attachments: [
+                {
+                    type: "image/pdf",
+                    url: "https://notification.com/updated_attachment.pdf"
+                }
+            ],
+            updatedAt: new Date()
+        }
+    }
+)
+```
+4. **Delete Notification**:
+```db.notifications.deleteOne({_id: ObjectId("12345")})```
+5. **Get Notification Details**:
+```db.notifications.findOne({_id: ObjectId("12345")})```
+
 # Stage 3
 
 -The query is accurate but may be slow due to lack of indexing on the studentID and isRead columns.

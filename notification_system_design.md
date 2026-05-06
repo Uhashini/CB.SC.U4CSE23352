@@ -232,3 +232,4 @@ operations due to the overhead of maintaining multiple indexes.
 SELECT * FROM notifications 
 WHERE notificationType = 'Placement' AND createdAt >= DATE_SUB(NOW(), INTERVAL 7 DAY);
 ``` 
+# Stage 4

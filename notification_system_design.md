@@ -239,3 +239,25 @@ WHERE notificationType = 'Placement' AND createdAt >= DATE_SUB(NOW(), INTERVAL 7
 
 tradeoffs:
 - Pagination and lazy loading can improve performance but may require additional implementation effort and can lead to a less seamless user experience if not implemented properly.
+
+# Stage 5
+1. **Scalability Issues**: The current implementation may not scale well as the number of students increases. Sending individual notifications to each student can lead to performance bottlenecks and increased latency.
+2. **Resource Intensive**: Sending notifications to a large number of students can consume significant server resources and may lead to timeouts or failures in delivering notifications.
+3. **Lack of Personalization**: The current implementation sends the same message to all students without any personalization, which may reduce the effectiveness of the notifications and lead to lower engagement rates.
+
+```python
+def notify_all(student_ids: array, message: string):
+   
+    notification_id = save_to_db(message)
+    
+    
+    notifications = []
+    for student_id in student_ids:
+        notifications.append({
+            "student_id": student_id,
+            "notification_id": notification_id,
+            "message": message
+        })
+    
+
+    process_notifications_async(notifications)
